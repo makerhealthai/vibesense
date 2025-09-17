@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>VibeSense - Coffee Grinder Logger</title>
+  <meta name="theme-color" content="#FF5722"/>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=K2D:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  
+  <style>
+    :root {
+      --primary-orange: #FF5722;
+      --bright-blue: #00BCD4;
+      --dark-gray: #333333;
+      --light-gray: #f5f5f5;
+      --border-gray: #e0e0e0;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'K2D', system-ui, -apple-system, sans-serif;
+      background: white;
+      color: var(--dark-gray);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .icon {
+      width: 24px;
+      height: 24px;
+      display: inline-block;
+      vertical-align: middle;
+      fill: currentColor;
+    }
+    
+    .icon-lg {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .icon-xl {
+      width: 64px;
+      height: 64px;
+    }
+    
+    /* Header */
+    header {
+      background: white;
+      border-bottom: 1px solid var(--border-gray);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--dark-gray);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary-orange);
+    }
+    
+    .app-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--dark-gray);
+    }
+    
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 24px 16px 40px;
+      overflow-y: auto;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    /* Form Section */
+    .form-section {
+      margin-bottom: 24px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-orange);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: 'K2D', sans-serif;
+      transition: border-color 0.2s;
+      background: white;
+    }
+    
+    input[type="text"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-orange);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    
+    /* Vibration Data Card */
+    .data-card {
+      background: white;
+      border: 1px solid var(--border-gray);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    
+    .data-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    
+    .data-title h2 {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--bright-blue);
+      margin-bottom: 4px;
+    }
+    
+    .data-title .subtitle {
+      font-size: 14px;
+      color: var(--primary-orange);
+      font-weight: 600;
+    }
+    
+    .data-value {
+      text-align: right;
+    }
+    
+    .data-value .main {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--dark-gray);
+    }
+    
+    .data-value .change {
+      font-size: 14px;
+      font-weight: 500;
+      color: #ef4444;
+    }
+    
+    /* Charts */
+    .chart-container {
+      height: 200px;
+      background: #fafafa;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    
+    canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+    }
+    
+    .axis-labels {
+      display: flex;
+      justify-content: space-around;
+      padding: 0 20px;
+      margin-top: 8px;
+    }
+    
+    .axis-labels span {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary-orange);
+    }
+    
+    /* Multi-axis plots */
+    .plots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    .plot-item {
+      background: white;
+      border: 1px solid var(--border-gray);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    
+    .plot-item label {
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .plot-item canvas {
+      height: 120px;
+      background: #fafafa;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    
+    .stat-item {
+      background: #f8f8f8;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dark-gray);
+    }
+    
+    /* Control Buttons */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin: 32px 0;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 32px;
+      border-radius: 50px;
+      border: none;
+      font-size: 18px;
+      font-weight: 700;
+      font-family: 'K2D', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 140px;
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-primary {
+      background: var(--bright-blue);
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      background: #00acc1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #e0e0e0;
+      color: var(--dark-gray);
+    }
+    
+    .btn-secondary:hover:not(:disabled) {
+      background: #d0d0d0;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+      background: #dc2626;
+    }
+    
+    .btn-warn {
+      background: var(--primary-orange);
+      color: white;
+    }
+    
+    .btn-success {
+      background: #22c55e;
+      color: white;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      background: #16a34a;
+    }
+    
+    /* Status Messages */
+    .status-message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-size: 14px;
+      display: none;
+    }
+    
+    .status-message.show {
+      display: block;
+    }
+    
+    .status-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .status-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .status-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    
+    /* Permission Button */
+    .permission-btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 2px dashed var(--primary-orange);
+      background: rgba(255, 87, 34, 0.05);
+      color: var(--primary-orange);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 20px;
+      font-family: 'K2D', sans-serif;
+    }
+    
+    .permission-btn:hover {
+      background: rgba(255, 87, 34, 0.1);
+    }
+    
+    .permission-btn.enabled {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: #22c55e;
+      color: #22c55e;
+    }
+    
+    /* Info Box */
+    .info-box {
+      background: #f0f9ff;
+      border: 1px solid #0284c7;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+    
+    .info-box h3 {
+      color: #0284c7;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .info-box p {
+      color: #075985;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  </style>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;VibeSense Coffee Logger&quot;,&quot;short_name&quot;:&quot;VibeSense&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#ffffff&quot;,&quot;theme_color&quot;:&quot;#FF5722&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%23FF5722'/%3E%3Cpath d='M110 280c70-80 222-80 292 0' stroke='%2300BCD4' stroke-width='36' fill='none' stroke-linecap='round'/%3E%3Cpath d='M160 330c46-52 146-52 192 0' stroke='%23ffffff' stroke-width='28' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='200' r='16' fill='%23ffffff'/%3E%3C/svg%3E&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}" />
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <button class="close-btn" onclick="window.location.reload()">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+      <h1>MakerHealth Create™</h1>
+    </div>
+    <div class="app-name">VibeSense</div>
+  </header>
+  
+  <!-- Main Content -->
+  <main>
+    <!-- Permission Section -->
+    <button id="btnEnable" class="permission-btn">
+      <svg class="icon" viewBox="0 0 24 24">
+        <path d="M7.97 16L5 19C4.67 19.3 4.23 19.5 3.75 19.5C2.78 19.5 2 18.72 2 17.75V17.5L1 10.12C1 10.12 1 10 1.1 9.9S1.34 9.75 1.5 9.75L6 7.58C6.34 7.41 6.78 7.58 6.94 7.94L7.97 10.06L12 8.5L10.92 4.77C10.8 4.36 11 3.9 11.37 3.72L14.62 2.22C15 2.09 15.38 2.32 15.44 2.67L16.97 11.97C17.03 12.31 16.91 12.69 16.62 12.9L10 16.5L7.97 16M14 19H22C22.55 19 23 19.45 23 20S22.55 21 22 21H14C13.45 21 13 20.55 13 20S13.45 19 14 19M10.67 10.67C10.67 11.77 11.59 12.69 12.69 12.69S14.72 11.77 14.72 10.67S13.8 8.64 12.69 8.64C11.59 8.64 10.67 9.56 10.67 10.67Z"/>
+      </svg>
+      Enable Motion Access
+    </button>
+    
+    <div id="permissionStatus" class="status-message"></div>
+    
+    <!-- Form Section -->
+    <div class="form-section">
+      <div class="form-group">
+        <label for="expName">Experiment Name</label>
+        <input type="text" id="expName" placeholder="Enter experiment name (e.g., Baratza Encore - Medium Roast)"/>
+      </div>
+      
+      <div class="form-group">
+        <label for="expNotes">Notes</label>
+        <textarea id="expNotes" placeholder="Bean type, grind setting, dose, surface notes..."></textarea>
+      </div>
+    </div>
+    
+    <!-- Vibration Data Card -->
+    <div class="data-card">
+      <div class="data-header">
+        <div class="data-title">
+          <h2>Vibration Data</h2>
+          <div class="subtitle">Realtime</div>
+        </div>
+        <div class="data-value">
+          <div class="main" id="currentMag">0.00</div>
+          <div class="change" id="magChange">0.00%</div>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <canvas id="mainChart"></canvas>
+      </div>
+      
+      <div class="axis-labels">
+        <span>X</span>
+        <span>Y</span>
+        <span>Z</span>
+      </div>
+      
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">Samples</div>
+          <div class="stat-value" id="statSamples">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Duration</div>
+          <div class="stat-value" id="statDuration">0.0s</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Rate</div>
+          <div class="stat-value" id="statRate">—</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Markers</div>
+          <div class="stat-value" id="statMarkers">0</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Control Buttons -->
+    <div class="controls">
+      <button id="btnStart" class="btn btn-primary" disabled>
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        Start
+      </button>
+      <button id="btnMark" class="btn btn-warn" disabled>
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/>
+        </svg>
+        Marker
+      </button>
+      <button id="btnStop" class="btn btn-danger" disabled style="display:none;">
+        <svg class="icon" viewBox="0 0 24 24">
+          <rect x="6" y="6" width="12" height="12"/>
+        </svg>
+        Stop & Save
+      </button>
+    </div>
+    
+    <!-- Export Buttons (shown after recording) -->
+    <div id="exportControls" class="controls" style="display:none;">
+      <button id="btnSaveCSV" class="btn btn-success">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+        </svg>
+        Save as CSV
+      </button>
+      <button id="btnSaveJSON" class="btn btn-success">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+        </svg>
+        Save as JSON
+      </button>
+      <button id="btnNewRecording" class="btn btn-secondary">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+        </svg>
+        New Recording
+      </button>
+    </div>
+    
+    <!-- Multi-axis Plots -->
+    <div class="plots-grid" id="plotsGrid" style="display:none;">
+      <div class="plot-item">
+        <label>Accel X (m/s²)</label>
+        <canvas id="plotX"></canvas>
+      </div>
+      <div class="plot-item">
+        <label>Accel Y (m/s²)</label>
+        <canvas id="plotY"></canvas>
+      </div>
+      <div class="plot-item">
+        <label>Accel Z (m/s²)</label>
+        <canvas id="plotZ"></canvas>
+      </div>
+      <div class="plot-item">
+        <label>Magnitude |a|</label>
+        <canvas id="plotMag"></canvas>
+      </div>
+    </div>
+    
+    <!-- Info Box -->
+    <div class="info-box">
+      <h3>Recording Tips</h3>
+      <p>
+        • Place phone flat on grinder for best results<br>
+        • Use markers to tag important events (grind setting changes, etc.)<br>
+        • Data saves directly to your chosen location when you click Stop<br>
+        • Sampling rate typically 50-100 Hz depending on device
+      </p>
+    </div>
+  </main>
+  
+  <script>
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      const swCode = `
+        self.addEventListener('install', e => {
+          e.waitUntil(caches.open('vibesense-v1').then(c => c.addAll(['/'])));
+        });
+        self.addEventListener('fetch', e => {
+          e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+        });
+      `;
+      const blob = new Blob([swCode], {type: 'text/javascript'});
+      const url = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(url).catch(() => {});
+    }
+    
+    // Get DOM elements
+    const btnEnable = document.getElementById('btnEnable');
+    const btnStart = document.getElementById('btnStart');
+    const btnStop = document.getElementById('btnStop');
+    const btnMark = document.getElementById('btnMark');
+    const btnSaveCSV = document.getElementById('btnSaveCSV');
+    const btnSaveJSON = document.getElementById('btnSaveJSON');
+    const btnNewRecording = document.getElementById('btnNewRecording');
+    const permissionStatus = document.getElementById('permissionStatus');
+    const expName = document.getElementById('expName');
+    const expNotes = document.getElementById('expNotes');
+    const statSamples = document.getElementById('statSamples');
+    const statDuration = document.getElementById('statDuration');
+    const statRate = document.getElementById('statRate');
+    const statMarkers = document.getElementById('statMarkers');
+    const currentMag = document.getElementById('currentMag');
+    const magChange = document.getElementById('magChange');
+    const plotsGrid = document.getElementById('plotsGrid');
+    const exportControls = document.getElementById('exportControls');
+    
+    // Canvas contexts
+    const mainChart = document.getElementById('mainChart');
+    const ctx = mainChart.getContext('2d');
+    const plotX = document.getElementById('plotX');
+    const plotY = document.getElementById('plotY');
+    const plotZ = document.getElementById('plotZ');
+    const plotMag = document.getElementById('plotMag');
+    
+    // Recording state
+    let rec = {
+      enabled: false,
+      running: false,
+      started: 0,
+      lastT: 0,
+      n: 0,
+      samples: [],
+      markers: [],
+      lastMag: 0,
+      currentExperiment: null
+    };
+    
+    // Enable motion sensors
+    async function enableSensors() {
+      try {
+        permissionStatus.textContent = 'Requesting permission...';
+        permissionStatus.className = 'status-message status-info show';
+        btnEnable.disabled = true;
+        
+        // iOS permission check
+        if (typeof DeviceMotionEvent !== 'undefined' && 
+            typeof DeviceMotionEvent.requestPermission === 'function') {
+          console.log('iOS detected - requesting permission');
+          const permission = await DeviceMotionEvent.requestPermission();
+          console.log('Permission result:', permission);
+          
+          if (permission !== 'granted') {
+            throw new Error(`Permission ${permission}. Go to Settings → Safari → Motion & Orientation Access`);
+          }
+        }
+        
+        // Also check DeviceOrientationEvent
+        if (typeof DeviceOrientationEvent !== 'undefined' && 
+            typeof DeviceOrientationEvent.requestPermission === 'function') {
+          await DeviceOrientationEvent.requestPermission();
+        }
+        
+        rec.enabled = true;
+        btnStart.disabled = false;
+        btnEnable.textContent = '✓ Motion Access Enabled';
+        btnEnable.className = 'permission-btn enabled';
+        permissionStatus.textContent = 'Ready to record vibration data';
+        permissionStatus.className = 'status-message status-success show';
+        
+        setTimeout(() => {
+          permissionStatus.className = 'status-message';
+        }, 3000);
+        
+      } catch(e) {
+        console.error('Permission error:', e);
+        btnEnable.disabled = false;
+        permissionStatus.textContent = `Error: ${e.message}`;
+        permissionStatus.className = 'status-message status-error show';
+      }
+    }
+    
+    // Start recording
+    function startRecording() {
+      if (!rec.enabled) {
+        alert('Please enable motion access first');
+        return;
+      }
+      
+      rec.samples = [];
+      rec.markers = [];
+      rec.n = 0;
+      rec.started = performance.now();
+      rec.running = true;
+      
+      btnStart.style.display = 'none';
+      btnStop.style.display = 'flex';
+      btnStop.disabled = false;
+      btnMark.disabled = false;
+      btnEnable.disabled = true;
+      exportControls.style.display = 'none';
+      
+      plotsGrid.style.display = 'grid';
+      
+      permissionStatus.textContent = 'Recording vibration data...';
+      permissionStatus.className = 'status-message status-info show';
+    }
+    
+    // Stop recording and show save options
+    function stopRecording() {
+      rec.running = false;
+      btnStop.style.display = 'none';
+      btnStart.style.display = 'flex';
+      btnStart.disabled = true;
+      btnMark.disabled = true;
+      
+      // Store the experiment data
+      rec.currentExperiment = {
+        name: expName.value || 'Untitled Recording',
+        notes: expNotes.value || '',
+        started: Date.now(),
+        dur_ms: rec.lastT - rec.started,
+        samples: rec.samples,
+        markers: rec.markers,
+        device: navigator.userAgent
+      };
+      
+      // Show export options
+      exportControls.style.display = 'flex';
+      
+      permissionStatus.textContent = 'Recording complete! Choose a format to save your data.';
+      permissionStatus.className = 'status-message status-success show';
+    }
+    
+    // Add marker
+    function addMarker() {
+      rec.markers.push(rec.lastT - rec.started);
+      if (rec.samples.length) {
+        rec.samples[rec.samples.length - 1].marker = 1;
+      }
+      statMarkers.textContent = rec.markers.length;
+    }
+    
+    // Handle motion events
+    function onMotion(e) {
+      if (!rec.running) return;
+      
+      const t = performance.now();
+      const a = e.acceleration || e.accelerationIncludingGravity || {};
+      const g = e.rotationRate || {};
+      
+      const ax = a.x || 0;
+      const ay = a.y || 0;
+      const az = a.z || 0;
+      const gx = g.alpha || 0;
+      const gy = g.beta || 0;
+      const gz = g.gamma || 0;
+      const mag = Math.sqrt(ax * ax + ay * ay + az * az);
+      
+      rec.samples.push({
+        t_ms: t - rec.started,
+        ax, ay, az,
+        gx, gy, gz,
+        mag,
+        marker: 0
+      });
+      
+      rec.n++;
+      rec.lastT = t;
+      
+      // Update UI
+      statSamples.textContent = rec.n;
+      const dur = (t - rec.started) / 1000;
+      statDuration.textContent = dur.toFixed(1) + 's';
+      currentMag.textContent = mag.toFixed(2);
+      
+      // Calculate change percentage
+      if (rec.lastMag !== 0) {
+        const change = ((mag - rec.lastMag) / rec.lastMag) * 100;
+        magChange.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+        magChange.style.color = change >= 0 ? '#22c55e' : '#ef4444';
+      }
+      rec.lastMag = mag;
+      
+      // Update rate
+      if (dur > 0) {
+        statRate.textContent = (rec.n / dur).toFixed(1) + 'Hz';
+      }
+      
+      // Update charts every few samples
+      if (rec.n % 3 === 0) {
+        drawMainChart();
+        drawAxisPlots();
+      }
+    }
+    
+    // Draw main sparkline chart
+    function drawMainChart() {
+      const W = mainChart.width = mainChart.clientWidth * devicePixelRatio;
+      const H = mainChart.height = mainChart.clientHeight * devicePixelRatio;
